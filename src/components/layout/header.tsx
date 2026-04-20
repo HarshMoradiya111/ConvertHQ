@@ -26,6 +26,9 @@ export async function Header() {
           <Link href="/pricing" className="text-muted-foreground hover:text-foreground transition-colors">
             Pricing
           </Link>
+          <Link href="/blog" className="text-muted-foreground hover:text-foreground transition-colors">
+            Blog
+          </Link>
         </nav>
         
         <div className="flex items-center gap-4">
