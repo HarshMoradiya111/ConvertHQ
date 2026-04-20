@@ -1,13 +1,13 @@
 import { MetadataRoute } from "next";
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://shiftfile.vercel.app";
 
   return {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: ["/api/", "/dashboard/", "/login/"],
+      disallow: ["/api/", "/dashboard/", "/admin/", "/auth/"],
     },
     sitemap: `${baseUrl}/sitemap.xml`,
   };
