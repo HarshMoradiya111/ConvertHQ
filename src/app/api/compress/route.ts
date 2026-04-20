@@ -7,11 +7,21 @@ import { NextResponse } from "next/server";
 import { processCompression } from "@/lib/conversion-engine";
 import { saveUploadedFile, getExtension, formatBytes } from "@/lib/file-utils";
 import { FILE_LIMITS, getCategoryFromExtension, isCategoryEnabled } from "@/lib/format-map";
+import { checkQuota, logUsage } from "@/lib/supabase/usage";
 
 export const runtime = "nodejs";
 
 export async function POST(req: Request) {
   try {
+    // 1. Enforce Usage Quota
+    const quota = await checkQuota('compress');
+    if (!quota.allowed) {
+      return NextResponse.json(
+        { error: quota.reason || "Daily free limit reached. Please sign up to continue." },
+        { status: 429 }
+      );
+    }
+
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
     const quality = parseInt(formData.get("quality") as string) || 60;
@@ -50,6 +60,9 @@ export async function POST(req: Request) {
     const result = await processCompression(inputPath, inputExt, quality);
 
     const savings = Math.round((1 - result.convertedSize / result.originalSize) * 100);
+
+    // Log the successful usage
+    await logUsage('compress', file.size);
 
     return NextResponse.json({
       success: true,

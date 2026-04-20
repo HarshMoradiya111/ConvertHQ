@@ -7,11 +7,21 @@ import { NextResponse } from "next/server";
 import { processConversion } from "@/lib/conversion-engine";
 import { saveUploadedFile, getExtension, formatBytes } from "@/lib/file-utils";
 import { isConversionSupported, FILE_LIMITS } from "@/lib/format-map";
+import { checkQuota, logUsage } from "@/lib/supabase/usage";
 
 export const runtime = "nodejs";
 
 export async function POST(req: Request) {
   try {
+    // 1. Enforce Usage Quota
+    const quota = await checkQuota('convert');
+    if (!quota.allowed) {
+      return NextResponse.json(
+        { error: quota.reason || "Daily free limit reached. Please sign up to continue." },
+        { status: 429 }
+      );
+    }
+
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
     const targetFormat = formData.get("format") as string | null;
@@ -54,6 +64,9 @@ export async function POST(req: Request) {
       outputFormat: targetFormat,
       quality,
     });
+
+    // Log the successful usage
+    await logUsage('convert', file.size);
 
     return NextResponse.json({
       success: true,
