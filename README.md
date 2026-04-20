@@ -1,36 +1,101 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ConvertHQ 🚀
 
-## Getting Started
+**ConvertHQ** is a high-performance, premium SaaS platform for seamless file conversion and compression. Built with Next.js 15+, Supabase, and Stripe, it offers a frictionless experience for processing images, video, and audio directly in the browser.
 
-First, run the development server:
+![ConvertHQ OG Image](public/og-image.png)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## ✨ Features
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- 🔄 **Multi-File Conversion:** Convert multiple files simultaneously across various formats.
+- 📉 **Intelligent Compression:** Reduce file sizes for WebP, PNG, and JPEG with zero quality loss.
+- 🎥 **Video & Audio Support:** Client-side processing using FFmpeg WASM (No server-side costs!).
+- 📦 **Batch Downloads:** Download all converted files in a single, organized `.zip` archive (Pro Feature).
+- 💳 **Stripe Integration:** Fully functional subscription system with Webhooks.
+- 🔐 **Supabase Auth:** Secure authentication with Google OAuth and Email/Password.
+- 📊 **PostHog Analytics:** Built-in event tracking and user behavior analysis.
+- 📧 **Transactional Emails:** Beautiful welcome emails via Resend.
+- 📱 **Premium UI/UX:** Modern, responsive design with dark mode support and smooth animations.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🛠️ Tech Stack
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Framework:** [Next.js 15 (App Router)](https://nextjs.org/)
+- **Styling:** [Tailwind CSS](https://tailwindcss.com/)
+- **Components:** [Shadcn UI](https://ui.shadcn.com/)
+- **Database & Auth:** [Supabase](https://supabase.com/)
+- **Payments:** [Stripe](https://stripe.com/)
+- **Analytics:** [PostHog](https://posthog.com/)
+- **Email:** [Resend](https://resend.com/)
+- **Processing:** [FFmpeg.wasm](https://ffmpegwasm.netlify.app/)
+- **State Management:** React Hooks & Server Actions
 
-## Learn More
+## 🚀 Getting Started
 
-To learn more about Next.js, take a look at the following resources:
+### Prerequisites
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Node.js 18+ 
+- NPM / PNPM / Bun
+- Supabase Project
+- Stripe Account
+- Resend API Key
+- PostHog Project
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Installation
 
-## Deploy on Vercel
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/your-username/converthq.git
+   cd converthq
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+3. **Configure Environment Variables:**
+   Create a `.env.local` file in the root directory and add the following:
+   ```env
+   # Supabase
+   NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+   SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+
+   # App
+   NEXT_PUBLIC_APP_URL=http://localhost:3000
+
+   # Stripe
+   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
+   STRIPE_SECRET_KEY=sk_test_...
+   STRIPE_WEBHOOK_SECRET=whsec_...
+   NEXT_PUBLIC_STRIPE_PRO_PRICE_ID=price_...
+
+   # Analytics & Email
+   NEXT_PUBLIC_POSTHOG_KEY=phc_...
+   NEXT_PUBLIC_POSTHOG_HOST=https://us.i.posthog.com
+   RESEND_API_KEY=re_...
+   ```
+
+4. **Run the development server:**
+   ```bash
+   npm run dev
+   ```
+
+## 🌍 Deployment
+
+### Vercel (Recommended)
+
+1. Connect your GitHub repository to Vercel.
+2. Add all environment variables from `.env.local` to the Vercel Project Settings.
+3. Set `NEXT_PUBLIC_APP_URL` to your production domain (e.g., `https://your-site.vercel.app`).
+4. **Important:** Ensure `SharedArrayBuffer` is enabled by keeping the custom headers in `next.config.ts` (required for FFmpeg WASM).
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🤝 Support
+
+For support, email support@converthq.com or join our Discord community.
+
+---
+Built with ❤️ by [Harsh Moradiya](https://github.com/HarshMoradiya111)
