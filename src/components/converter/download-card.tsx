@@ -11,7 +11,7 @@ interface DownloadCardProps {
   originalSize: string;
   convertedSize: string;
   savings?: string;
-  onConvertAnother: () => void;
+  onConvertAnother?: () => void;
 }
 
 export function DownloadCard({
@@ -65,15 +65,17 @@ export function DownloadCard({
               <Download className="mr-2 size-4" />
               Download File
             </a>
-            <Button
-              variant="outline"
-              size="lg"
-              onClick={onConvertAnother}
-              className="flex-1"
-            >
-              <RotateCcw className="mr-2 size-4" />
-              Convert Another
-            </Button>
+            {onConvertAnother && (
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={onConvertAnother}
+                className="flex-1"
+              >
+                <RotateCcw className="mr-2 size-4" />
+                Convert Another
+              </Button>
+            )}
           </div>
 
           <p className="text-xs text-muted-foreground">

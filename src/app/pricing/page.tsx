@@ -87,7 +87,7 @@ export default function PricingPage() {
             <h3 className="text-2xl font-semibold text-white mb-2">Pro</h3>
             <p className="text-slate-400 mb-6">For professionals and heavy workflows.</p>
             <div className="mb-8">
-              <span className="text-5xl font-bold text-white">$9</span>
+              <span className="text-5xl font-bold text-white">$4</span>
               <span className="text-slate-400">/month</span>
             </div>
             

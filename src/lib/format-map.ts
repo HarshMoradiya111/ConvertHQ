@@ -109,7 +109,7 @@ export function isConversionSupported(inputExt: string, outputExt: string): bool
 /**
  * Formats currently enabled for MVP (Phase 0.5 = image only)
  */
-export const ENABLED_CATEGORIES: FileCategory[] = ["image"];
+export const ENABLED_CATEGORIES: FileCategory[] = ["image", "video", "audio"];
 
 export function isCategoryEnabled(category: FileCategory): boolean {
   return ENABLED_CATEGORIES.includes(category);
