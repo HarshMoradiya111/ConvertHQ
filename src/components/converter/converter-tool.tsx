@@ -26,8 +26,12 @@ interface ConversionResult {
   savings?: string;
 }
 
-export function ConverterTool() {
-  const [activeTab, setActiveTab] = useState("convert");
+interface ConverterToolProps {
+  defaultTab?: string;
+}
+
+export function ConverterTool({ defaultTab = "convert" }: ConverterToolProps) {
+  const [activeTab, setActiveTab] = useState(defaultTab);
   const [files, setFiles] = useState<File[]>([]);
   const [outputFormat, setOutputFormat] = useState("");
   const [quality, setQuality] = useState(80);
