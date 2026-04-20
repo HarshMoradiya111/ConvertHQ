@@ -40,24 +40,40 @@ export async function checkQuota(action: 'convert' | 'compress' | 'download'): P
     
     if (user) {
       userId = user.id;
-      // TODO: Check pro tier status here
-      // For now, authenticated users have no limits
-      return { allowed: true };
+      
+      // Check pro tier status
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('tier')
+        .eq('id', userId)
+        .single();
+        
+      if (profile?.tier === 'pro') {
+        return { allowed: true };
+      }
     } else {
       sessionId = await getOrCreateSessionId();
+    }
       
-      // Calculate start of today
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+    // Calculate start of today for limit checking
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // Count usage for this user/session today
+    let query = supabase
+      .from('usage_logs')
+      .select('*', { count: 'exact', head: true })
+      .gte('created_at', today.toISOString());
       
-      // Count usage for this session today
-      const { count, error } = await supabase
-        .from('usage_logs')
-        .select('*', { count: 'exact', head: true })
-        .eq('session_id', sessionId)
-        .gte('created_at', today.toISOString());
+    if (userId) {
+      query = query.eq('user_id', userId);
+    } else {
+      query = query.eq('session_id', sessionId);
+    }
+    
+    const { count, error } = await query;
         
-      if (error) {
+    if (error) {
         console.error("Quota check error:", error);
         // Fail open if database is down
         return { allowed: true };
@@ -71,8 +87,7 @@ export async function checkQuota(action: 'convert' | 'compress' | 'download'): P
       }
       
       return { allowed: true };
-    }
-  } catch (error) {
+    } catch (error) {
     console.error("Quota check exception:", error);
     return { allowed: true };
   }

@@ -23,16 +23,19 @@ export async function Header() {
           <Link href="/compress" className="text-muted-foreground hover:text-foreground transition-colors">
             Compressor
           </Link>
+          <Link href="/pricing" className="text-muted-foreground hover:text-foreground transition-colors">
+            Pricing
+          </Link>
         </nav>
         
         <div className="flex items-center gap-4">
           {user ? (
             <div className="flex items-center gap-4">
-              <span className="text-sm text-muted-foreground hidden sm:inline-block">
-                {user.email}
-              </span>
+              <Link href="/dashboard" className="text-sm font-medium hover:text-primary transition-colors">
+                Dashboard
+              </Link>
               <form action="/api/auth/signout" method="POST">
-                <button type="submit" className="text-sm font-medium hover:text-primary transition-colors">
+                <button type="submit" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
                   Sign out
                 </button>
               </form>
