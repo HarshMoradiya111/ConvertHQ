@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, ArrowRight, Zap, Shield, Rocket } from "lucide-react";
+import { WaitlistForm } from "@/components/waitlist/waitlist-form";
 
 export default function LandingPage() {
   return (
@@ -47,17 +48,7 @@ export default function LandingPage() {
               </div>
               
               <div className="w-full max-w-md space-y-3 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
-                <form className="flex flex-col sm:flex-row gap-2">
-                  <Input 
-                    className="flex-1 h-12 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-sm border-border focus:ring-2 focus:ring-primary/50 transition-all" 
-                    placeholder="Enter your email" 
-                    type="email" 
-                    required 
-                  />
-                  <Button type="submit" size="lg" className="h-12 px-8 font-semibold shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all">
-                    Join Waitlist <ArrowRight className="ml-2 size-4" />
-                  </Button>
-                </form>
+                <WaitlistForm />
                 <p className="text-xs text-muted-foreground">
                   Secure your spot. First 100 users get lifetime priority access.
                 </p>
