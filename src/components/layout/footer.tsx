@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Zap } from "lucide-react";
+import Image from "next/image";
 
 export function Footer() {
   return (
@@ -8,7 +8,13 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
           <div className="col-span-1 md:col-span-2 space-y-4">
             <Link href="/" className="flex items-center gap-2 font-bold text-xl">
-              <Zap className="size-6 text-primary" />
+              <Image 
+                src="/logo.png" 
+                alt="ConvertHQ" 
+                width={32} 
+                height={32} 
+                className="rounded-lg"
+              />
               ConvertHQ
             </Link>
             <p className="text-muted-foreground max-w-xs">

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Zap } from "lucide-react";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 
 export async function Header() {
@@ -10,9 +10,13 @@ export async function Header() {
     <header className="w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50 sticky top-0">
       <div className="container mx-auto px-4 h-14 flex items-center justify-between max-w-6xl">
         <Link href="/" className="flex items-center space-x-2">
-          <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center">
-            <Zap className="size-5 text-primary" />
-          </div>
+          <Image 
+            src="/logo.png" 
+            alt="ConvertHQ" 
+            width={32} 
+            height={32} 
+            className="rounded-lg"
+          />
           <span className="font-bold text-lg tracking-tight">ConvertHQ</span>
         </Link>
         
