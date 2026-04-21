@@ -44,3 +44,4 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 SAAS_MVP_ROADMAP.md
+FUTURE_FEATURES.md

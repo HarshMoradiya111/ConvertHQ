@@ -7,6 +7,7 @@ import { ConversionProgress, type ConversionStatus } from "@/components/converte
 import { DownloadCard } from "@/components/converter/download-card";
 import { CompressionSlider } from "@/components/converter/compression-slider";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
@@ -18,6 +19,8 @@ import { useEffect } from "react";
 import { getCategoryFromExtension } from "@/lib/format-map";
 import { convertVideo } from "@/lib/video-utils";
 import { AdBanner } from "@/components/ads/ad-banner";
+import { mergePDFs, splitPDF, compressPDF } from "@/lib/pdf-utils";
+import { resizeImage } from "@/lib/image-utils";
 
 interface ConversionResult {
   downloadUrl: string;
@@ -40,6 +43,9 @@ export function ConverterTool({ defaultTab = "convert" }: ConverterToolProps) {
   const [errorMessage, setErrorMessage] = useState<string>();
   const [results, setResults] = useState<ConversionResult[]>([]);
   const [userTier, setUserTier] = useState<string>("free");
+  const [resizeWidth, setResizeWidth] = useState<number>(0);
+  const [resizeHeight, setResizeHeight] = useState<number>(0);
+  const [pdfOp, setPdfOp] = useState<"merge" | "split" | "compress">("merge");
   const [isZipping, setIsZipping] = useState(false);
 
   useEffect(() => {
@@ -67,6 +73,9 @@ export function ConverterTool({ defaultTab = "convert" }: ConverterToolProps) {
     setStatus("idle");
     setErrorMessage(undefined);
     setResults([]);
+    setResizeWidth(0);
+    setResizeHeight(0);
+    setPdfOp("merge");
   }, []);
 
   const handleConvert = async () => {
@@ -86,7 +95,22 @@ export function ConverterTool({ defaultTab = "convert" }: ConverterToolProps) {
           throw new Error("Video & Audio conversion is a Pro feature. Please upgrade to continue.");
         }
 
-        if (category === "video" || category === "audio") {
+        if (category === "image" && (resizeWidth > 0 || resizeHeight > 0)) {
+          setStatus("processing");
+          const targetW = resizeWidth || 800; // default if one is missing
+          const targetH = resizeHeight || 800;
+          const blob = await resizeImage(file, targetW, targetH, quality / 100);
+          
+          // If they also wanted to change format, we'd need another step, 
+          // but for now, resizing keeps the original format or we can just upload the resized blob.
+          const url = URL.createObjectURL(blob);
+          newResults.push({
+            downloadUrl: url,
+            format: getExtension(file.name),
+            originalSizeFormatted: (file.size / (1024 * 1024)).toFixed(2) + " MB",
+            convertedSizeFormatted: (blob.size / (1024 * 1024)).toFixed(2) + " MB",
+          });
+        } else if (category === "video" || category === "audio") {
           setStatus("processing");
           const blob = await convertVideo(file, outputFormat, (p) => {
             // We could show progress here if we wanted
@@ -130,6 +154,73 @@ export function ConverterTool({ defaultTab = "convert" }: ConverterToolProps) {
     } catch (err) {
       setStatus("error");
       setErrorMessage(err instanceof Error ? err.message : "Something went wrong");
+    }
+  };
+
+  const handleResize = async (width: number, height: number) => {
+    if (files.length === 0) return;
+    setStatus("processing");
+    try {
+      const newResults: ConversionResult[] = [];
+      for (const file of files) {
+        const blob = await resizeImage(file, width, height, quality / 100);
+        const url = URL.createObjectURL(blob);
+        newResults.push({
+          downloadUrl: url,
+          format: getExtension(file.name),
+          originalSizeFormatted: (file.size / (1024 * 1024)).toFixed(2) + " MB",
+          convertedSizeFormatted: (blob.size / (1024 * 1024)).toFixed(2) + " MB",
+        });
+      }
+      setResults(newResults);
+      setStatus("done");
+    } catch (err) {
+      setStatus("error");
+      setErrorMessage(err instanceof Error ? err.message : "Resize failed");
+    }
+  };
+
+  const handlePDF = async (op: "merge" | "split" | "compress") => {
+    if (files.length === 0) return;
+    setStatus("processing");
+    try {
+      const newResults: ConversionResult[] = [];
+      if (op === "merge") {
+        const blob = await mergePDFs(files);
+        newResults.push({
+          downloadUrl: URL.createObjectURL(blob),
+          format: "pdf",
+          originalSizeFormatted: "N/A",
+          convertedSizeFormatted: (blob.size / (1024 * 1024)).toFixed(2) + " MB",
+        });
+      } else if (op === "split") {
+        for (const file of files) {
+          const blobs = await splitPDF(file);
+          blobs.forEach((blob, idx) => {
+            newResults.push({
+              downloadUrl: URL.createObjectURL(blob),
+              format: "pdf",
+              originalSizeFormatted: "N/A",
+              convertedSizeFormatted: (blob.size / (1024 * 1024)).toFixed(2) + " MB",
+            });
+          });
+        }
+      } else if (op === "compress") {
+        for (const file of files) {
+          const blob = await compressPDF(file);
+          newResults.push({
+            downloadUrl: URL.createObjectURL(blob),
+            format: "pdf",
+            originalSizeFormatted: (file.size / (1024 * 1024)).toFixed(2) + " MB",
+            convertedSizeFormatted: (blob.size / (1024 * 1024)).toFixed(2) + " MB",
+          });
+        }
+      }
+      setResults(newResults);
+      setStatus("done");
+    } catch (err) {
+      setStatus("error");
+      setErrorMessage(err instanceof Error ? err.message : "PDF operation failed");
     }
   };
 
@@ -218,9 +309,10 @@ export function ConverterTool({ defaultTab = "convert" }: ConverterToolProps) {
       </CardHeader>
       <CardContent className="space-y-6">
         <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); resetAll(); }}>
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="convert">Convert</TabsTrigger>
             <TabsTrigger value="compress">Compress</TabsTrigger>
+            <TabsTrigger value="pdf">PDF Tools</TabsTrigger>
           </TabsList>
 
           <TabsContent value="convert" className="space-y-6 pt-4">
@@ -233,6 +325,7 @@ export function ConverterTool({ defaultTab = "convert" }: ConverterToolProps) {
               }}
               currentFile={files[0] || null} // Placeholder for UI, we will enhance this
               onClear={resetAll}
+              multiple={true}
             />
 
             {files.length > 0 && results.length === 0 && (
@@ -288,6 +381,31 @@ export function ConverterTool({ defaultTab = "convert" }: ConverterToolProps) {
 
                 {outputFormat && (
                   <CompressionSlider value={quality} onChange={setQuality} />
+                )}
+
+                {files.length > 0 && getCategoryFromExtension(getExtension(files[0].name)) === "image" && (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Width (px)</label>
+                      <Input 
+                        type="number" 
+                        placeholder="Width" 
+                        value={resizeWidth || ""} 
+                        onChange={(e) => setResizeWidth(parseInt(e.target.value))} 
+                        className="h-10"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Height (px)</label>
+                      <Input 
+                        type="number" 
+                        placeholder="Height" 
+                        value={resizeHeight || ""} 
+                        onChange={(e) => setResizeHeight(parseInt(e.target.value))} 
+                        className="h-10"
+                      />
+                    </div>
+                  </div>
                 )}
 
                 <ConversionProgress status={status} errorMessage={errorMessage} />
@@ -357,6 +475,57 @@ export function ConverterTool({ defaultTab = "convert" }: ConverterToolProps) {
                   </Button>
                 )}
               </>
+            )}
+          </TabsContent>
+
+          <TabsContent value="pdf" className="space-y-6 pt-4">
+            <FileDropzone
+              onFileSelect={(f) => { setFiles(prev => [...prev, f]); setStatus("idle"); setResults([]); }}
+              accept={{ "application/pdf": [".pdf"] }}
+              currentFile={files[0] || null}
+              onClear={resetAll}
+              multiple={true}
+            />
+
+            {files.length > 0 && results.length === 0 && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-3 gap-2">
+                  <Button 
+                    variant={pdfOp === "merge" ? "default" : "outline"}
+                    onClick={() => setPdfOp("merge")}
+                    className="text-xs sm:text-sm"
+                  >
+                    Merge
+                  </Button>
+                  <Button 
+                    variant={pdfOp === "split" ? "default" : "outline"}
+                    onClick={() => setPdfOp("split")}
+                    className="text-xs sm:text-sm"
+                  >
+                    Split
+                  </Button>
+                  <Button 
+                    variant={pdfOp === "compress" ? "default" : "outline"}
+                    onClick={() => setPdfOp("compress")}
+                    className="text-xs sm:text-sm"
+                  >
+                    Compress
+                  </Button>
+                </div>
+
+                <ConversionProgress status={status} errorMessage={errorMessage} />
+
+                {status !== "uploading" && status !== "processing" && (
+                  <Button
+                    onClick={() => handlePDF(pdfOp)}
+                    size="lg"
+                    className="w-full font-semibold h-12"
+                  >
+                    Run {pdfOp.charAt(0).toUpperCase() + pdfOp.slice(1)}
+                    <ArrowRight className="ml-2 size-4" />
+                  </Button>
+                )}
+              </div>
             )}
           </TabsContent>
         </Tabs>

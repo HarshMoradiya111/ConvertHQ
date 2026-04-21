@@ -35,10 +35,22 @@ export async function convertVideo(
     });
   }
 
-  // Basic conversion command
-  await ffmpeg.exec(["-i", inputName, outputName]);
+  // Optimized GIF conversion or basic video transcoding
+  if (outputFormat === "gif") {
+    // High-quality GIF generation using a palette
+    await ffmpeg.exec([
+      "-i", inputName,
+      "-vf", "fps=12,scale=480:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse",
+      "-loop", "0",
+      outputName
+    ]);
+  } else {
+    await ffmpeg.exec(["-i", inputName, outputName]);
+  }
 
   const data = await ffmpeg.readFile(outputName);
   const uint8Array = new Uint8Array(data as any);
-  return new Blob([uint8Array], { type: `video/${outputFormat}` });
+  
+  const mimeType = outputFormat === "gif" ? "image/gif" : `video/${outputFormat}`;
+  return new Blob([uint8Array], { type: mimeType });
 }

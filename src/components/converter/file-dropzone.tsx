@@ -13,6 +13,7 @@ interface FileDropzoneProps {
   maxSize?: number;
   currentFile?: File | null;
   onClear?: () => void;
+  multiple?: boolean;
 }
 
 export function FileDropzone({
@@ -21,6 +22,7 @@ export function FileDropzone({
   maxSize = FILE_LIMITS.FREE_MAX_SIZE,
   currentFile,
   onClear,
+  multiple = false,
 }: FileDropzoneProps) {
   const [error, setError] = useState<string | null>(null);
 
@@ -34,14 +36,13 @@ export function FileDropzone({
         return;
       }
 
-      if (acceptedFiles.length > 0) {
-        const file = acceptedFiles[0];
+      acceptedFiles.forEach((file) => {
         if (file.size > maxSize) {
           setError(`File is too large. Max size: ${formatBytes(maxSize)}`);
           return;
         }
         onFileSelect(file);
-      }
+      });
     },
     [onFileSelect, maxSize]
   );
@@ -49,8 +50,8 @@ export function FileDropzone({
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept,
-    maxFiles: 1,
-    multiple: false,
+    maxFiles: multiple ? 100 : 1,
+    multiple,
   });
 
   if (currentFile) {
@@ -60,9 +61,11 @@ export function FileDropzone({
           <FileIcon className="size-8" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-sm truncate">{currentFile.name}</p>
+          <p className="font-semibold text-sm truncate">
+            {multiple ? "Ready to process" : currentFile.name}
+          </p>
           <p className="text-xs text-muted-foreground mt-1">
-            {formatBytes(currentFile.size)} • {currentFile.type || "unknown type"}
+            {multiple ? "Click Convert to start batch" : `${formatBytes(currentFile.size)} • ${currentFile.type || "unknown type"}`}
           </p>
         </div>
         {onClear && (
