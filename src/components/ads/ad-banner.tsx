@@ -14,7 +14,7 @@ export function AdBanner({
   userTier = "free", 
   className,
   format = "auto",
-  slot = "XXXXXXXXXX" // Default placeholder slot
+  slot = "5609953898" // Actual AdSense Slot ID
 }: AdBannerProps) {
   const [isLoaded, setIsLoaded] = useState(false);
 
