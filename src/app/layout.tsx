@@ -48,6 +48,8 @@ export const metadata: Metadata = {
   },
 };
 
+import Script from "next/script";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -58,6 +60,12 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <Script
+        async
+        src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX"
+        crossOrigin="anonymous"
+        strategy="afterInteractive"
+      />
       <body className="min-h-full flex flex-col">
         <JsonLd />
         <PostHogProvider>

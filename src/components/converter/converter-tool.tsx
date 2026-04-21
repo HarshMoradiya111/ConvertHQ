@@ -17,6 +17,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useEffect } from "react";
 import { getCategoryFromExtension } from "@/lib/format-map";
 import { convertVideo } from "@/lib/video-utils";
+import { AdBanner } from "@/components/ads/ad-banner";
 
 interface ConversionResult {
   downloadUrl: string;
@@ -401,6 +402,7 @@ export function ConverterTool({ defaultTab = "convert" }: ConverterToolProps) {
             </Button>
           </div>
         )}
+        <AdBanner userTier={userTier} className="mt-8 mb-0" />
       </CardContent>
     </Card>
   );

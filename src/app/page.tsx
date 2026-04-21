@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, Zap, Shield, Rocket, ArrowRight } from "lucide-react";
+import { Rocket, ArrowRight } from "lucide-react";
 import { WaitlistForm } from "@/components/waitlist/waitlist-form";
+import { AdBanner } from "@/components/ads/ad-banner";
 
 export default function LandingPage() {
   return (
@@ -134,6 +135,10 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
+        
+        <div className="container px-4 md:px-6">
+          <AdBanner userTier="free" />
+        </div>
 
         {/* Waitlist / CTA Section */}
         <section className="w-full py-24 bg-primary text-primary-foreground overflow-hidden relative">
