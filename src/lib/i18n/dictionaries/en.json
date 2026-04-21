@@ -1,0 +1,22 @@
+{
+  "common": {
+    "convert": "Convert",
+    "compress": "Compress",
+    "pricing": "Pricing",
+    "blog": "Blog",
+    "dashboard": "Dashboard",
+    "signIn": "Sign In",
+    "signOut": "Sign Out",
+    "readyToProcess": "Ready to process",
+    "clickToConvert": "Click Convert to start batch",
+    "selectFiles": "Select Files",
+    "clearAll": "Clear All",
+    "convertMore": "Convert More Files",
+    "downloadAll": "Download All",
+    "pdfTools": "PDF Tools"
+  },
+  "hero": {
+    "title": "Convert Anything. Anywhere. Instantly.",
+    "subtitle": "The ultimate hub for high-fidelity file conversions. Scale your workflow without the friction of manual processing."
+  }
+}

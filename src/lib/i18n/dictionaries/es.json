@@ -1,0 +1,22 @@
+{
+  "common": {
+    "convert": "Convertir",
+    "compress": "Comprimir",
+    "pricing": "Precios",
+    "blog": "Blog",
+    "dashboard": "Panel",
+    "signIn": "Iniciar sesión",
+    "signOut": "Cerrar sesión",
+    "readyToProcess": "Listo para procesar",
+    "clickToConvert": "Haga clic en Convertir para iniciar",
+    "selectFiles": "Seleccionar archivos",
+    "clearAll": "Limpiar todo",
+    "convertMore": "Convertir más archivos",
+    "downloadAll": "Descargar todo",
+    "pdfTools": "Herramientas PDF"
+  },
+  "hero": {
+    "title": "Convierte cualquier cosa. En cualquier lugar. Al instante.",
+    "subtitle": "El centro definitivo para conversiones de archivos de alta fidelidad. Escale su flujo de trabajo sin la fricción del procesamiento manual."
+  }
+}

@@ -21,6 +21,7 @@ import { convertVideo } from "@/lib/video-utils";
 import { AdBanner } from "@/components/ads/ad-banner";
 import { mergePDFs, splitPDF, compressPDF } from "@/lib/pdf-utils";
 import { resizeImage } from "@/lib/image-utils";
+import { logConversion } from "@/lib/conversion-history";
 
 interface ConversionResult {
   downloadUrl: string;
@@ -43,6 +44,7 @@ export function ConverterTool({ defaultTab = "convert" }: ConverterToolProps) {
   const [errorMessage, setErrorMessage] = useState<string>();
   const [results, setResults] = useState<ConversionResult[]>([]);
   const [userTier, setUserTier] = useState<string>("free");
+  const [userId, setUserId] = useState<string | null>(null);
   const [resizeWidth, setResizeWidth] = useState<number>(0);
   const [resizeHeight, setResizeHeight] = useState<number>(0);
   const [pdfOp, setPdfOp] = useState<"merge" | "split" | "compress">("merge");
@@ -53,6 +55,7 @@ export function ConverterTool({ defaultTab = "convert" }: ConverterToolProps) {
       const supabase = createClient();
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
+        setUserId(session.user.id);
         const { data: profile } = await supabase
           .from("profiles")
           .select("tier")
@@ -110,6 +113,15 @@ export function ConverterTool({ defaultTab = "convert" }: ConverterToolProps) {
             originalSizeFormatted: (file.size / (1024 * 1024)).toFixed(2) + " MB",
             convertedSizeFormatted: (blob.size / (1024 * 1024)).toFixed(2) + " MB",
           });
+
+          if (userId) {
+            logConversion({
+              userId,
+              fileName: file.name,
+              fromFormat: getExtension(file.name),
+              toFormat: outputFormat,
+            });
+          }
         } else if (category === "video" || category === "audio") {
           setStatus("processing");
           const blob = await convertVideo(file, outputFormat, (p) => {
@@ -123,6 +135,15 @@ export function ConverterTool({ defaultTab = "convert" }: ConverterToolProps) {
             originalSizeFormatted: (file.size / (1024 * 1024)).toFixed(2) + " MB",
             convertedSizeFormatted: (blob.size / (1024 * 1024)).toFixed(2) + " MB",
           });
+
+          if (userId) {
+            logConversion({
+              userId,
+              fileName: file.name,
+              fromFormat: getExtension(file.name),
+              toFormat: outputFormat,
+            });
+          }
         } else {
           const formData = new FormData();
           formData.append("file", file);
@@ -146,6 +167,15 @@ export function ConverterTool({ defaultTab = "convert" }: ConverterToolProps) {
             originalSizeFormatted: data.originalSizeFormatted,
             convertedSizeFormatted: data.convertedSizeFormatted,
           });
+
+          if (userId) {
+            logConversion({
+              userId,
+              fileName: file.name,
+              fromFormat: getExtension(file.name),
+              toFormat: data.format,
+            });
+          }
         }
       }
 

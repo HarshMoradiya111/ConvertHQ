@@ -1,6 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
+import { ThemeToggle } from "./theme-toggle";
+import { LanguageSelector } from "./language-selector";
 
 export async function Header() {
   const supabase = await createClient();
@@ -35,7 +37,9 @@ export async function Header() {
           </Link>
         </nav>
         
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
+          <LanguageSelector />
+          <ThemeToggle />
           {user ? (
             <div className="flex items-center gap-4">
               <Link href="/dashboard" className="text-sm font-medium hover:text-primary transition-colors">

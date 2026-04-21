@@ -7,6 +7,8 @@ import { Footer } from "@/components/layout/footer";
 import { PostHogProvider } from "@/components/providers/posthog-provider";
 import { JsonLd } from "@/components/seo/json-ld";
 import { CookieConsent } from "@/components/layout/cookie-consent";
+import { ThemeProvider } from "@/components/providers/theme-provider";
+import { LanguageProvider } from "@/lib/i18n/language-context";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -69,13 +71,22 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <JsonLd />
         <PostHogProvider>
-          <Header />
-          <main className="flex-1 flex flex-col">
-            {children}
-          </main>
-          <Footer />
-          <CookieConsent />
-          <Toaster position="top-center" />
+          <LanguageProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              <Header />
+              <main className="flex-1 flex flex-col">
+                {children}
+              </main>
+              <Footer />
+              <CookieConsent />
+              <Toaster position="top-center" />
+            </ThemeProvider>
+          </LanguageProvider>
         </PostHogProvider>
       </body>
     </html>
