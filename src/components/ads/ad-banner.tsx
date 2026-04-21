@@ -37,11 +37,11 @@ export function AdBanner({
   }
 
   return (
-    <div className={cn("w-full overflow-hidden my-8", className)}>
+    <div className={cn("w-full overflow-hidden my-8 min-h-[120px]", className)}>
       <div className="text-[10px] text-slate-400 uppercase tracking-widest text-center mb-2 font-medium">
         Sponsored
       </div>
-      <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 rounded-xl min-h-[100px] flex items-center justify-center overflow-hidden">
+      <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 rounded-xl min-h-[100px] flex items-center justify-center overflow-hidden aspect-[728/90] md:aspect-auto">
         {/* Actual AdSense Tag */}
         <ins
           className="adsbygoogle"
