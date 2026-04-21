@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe/client";
 import { createAdminClient } from "@/lib/supabase/admin";
 import Stripe from "stripe";
+import { resend } from "@/lib/email/resend";
+import BillingEmail from "@/lib/email/templates/billing-email";
 
 export async function POST(req: Request) {
   const body = await req.text();
@@ -31,17 +33,36 @@ export async function POST(req: Request) {
     if (supabaseUserId) {
       console.log(`Upgrading user ${supabaseUserId} to pro tier...`);
       
-      const { error } = await supabaseAdmin
+      const { data: profile, error: profileError } = await supabaseAdmin
         .from("profiles")
         .update({ tier: "pro" })
-        .eq("id", supabaseUserId);
+        .eq("id", supabaseUserId)
+        .select()
+        .single();
 
-      if (error) {
-        console.error("Failed to update user tier in Supabase:", error);
+      if (profileError) {
+        console.error("Failed to update user tier in Supabase:", profileError);
         return new NextResponse("Database update failed", { status: 500 });
       }
       
       console.log(`Successfully upgraded user ${supabaseUserId} to pro tier.`);
+
+      // Send Billing Confirmation Email
+      if (profile?.email) {
+        try {
+          await resend.emails.send({
+            from: "ConvertHQ Billing <billing@converthq.com>",
+            to: profile.email,
+            subject: "Your ConvertHQ Pro Upgrade is Confirmed! 🚀",
+            react: BillingEmail({ 
+              userFirstname: profile.full_name?.split(' ')[0] || 'there',
+              amount: session.amount_total ? `$${(session.amount_total / 100).toFixed(2)}` : "$9.00"
+            }),
+          });
+        } catch (emailError) {
+          console.error("Failed to send billing email:", emailError);
+        }
+      }
     }
   }
 

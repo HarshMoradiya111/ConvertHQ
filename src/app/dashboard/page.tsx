@@ -42,11 +42,19 @@ export default async function DashboardPage() {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-4 sm:p-8">
       <div className="max-w-4xl mx-auto space-y-8">
         
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Dashboard</h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-2">
-            Welcome back, {user.email}
-          </p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Dashboard</h1>
+            <p className="text-slate-500 dark:text-slate-400 mt-2">
+              Welcome back, {user.email}
+            </p>
+          </div>
+          <Link 
+            href="/dashboard/settings" 
+            className={cn(buttonVariants({ variant: "outline" }), "w-full sm:w-auto h-10")}
+          >
+            Settings
+          </Link>
         </div>
 
         <div className="grid sm:grid-cols-2 gap-6">
