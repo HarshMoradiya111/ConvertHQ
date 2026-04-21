@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Rocket, ArrowRight } from "lucide-react";
+import { CheckCircle2, Zap, Shield, Rocket, ArrowRight } from "lucide-react";
 import { WaitlistForm } from "@/components/waitlist/waitlist-form";
 import { AdBanner } from "@/components/ads/ad-banner";
 
