@@ -3,6 +3,7 @@ import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import { ThemeToggle } from "./theme-toggle";
 import { LanguageSelector } from "./language-selector";
+import { GlobalSearch } from "./global-search";
 
 export async function Header() {
   const supabase = await createClient();
@@ -22,7 +23,11 @@ export async function Header() {
           <span className="font-bold text-lg tracking-tight">ConvertHQ</span>
         </Link>
         
-        <nav className="flex items-center gap-6 text-sm font-medium">
+        <div className="hidden md:flex flex-1 max-w-sm ml-8">
+          <GlobalSearch />
+        </div>
+        
+        <nav className="flex items-center gap-6 text-sm font-medium ml-auto">
           <Link href="/convert" className="text-muted-foreground hover:text-foreground transition-colors">
             Converter
           </Link>

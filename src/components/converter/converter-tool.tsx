@@ -50,6 +50,34 @@ export function ConverterTool({ defaultTab = "convert" }: ConverterToolProps) {
   const [pdfOp, setPdfOp] = useState<"merge" | "split" | "compress">("merge");
   const [isZipping, setIsZipping] = useState(false);
 
+  const getPresets = (file: File) => {
+    const ext = getExtension(file.name);
+    const cat = getCategoryFromExtension(ext);
+    
+    if (cat === "image") {
+      return [
+        { label: "Convert to JPG", format: "jpg" },
+        { label: "Convert to PNG", format: "png" },
+        { label: "Convert to PDF", format: "pdf" },
+        { label: "Resize", action: () => { setResizeWidth(800); setResizeHeight(600); } },
+      ];
+    }
+    if (ext === "pdf") {
+      return [
+        { label: "Compress PDF", action: () => setPdfOp("compress") },
+        { label: "Split PDF", action: () => setPdfOp("split") },
+        { label: "Convert to JPG", format: "jpg" },
+      ];
+    }
+    if (cat === "video") {
+      return [
+        { label: "Convert to GIF", format: "gif" },
+        { label: "Convert to MP4", format: "mp4" },
+      ];
+    }
+    return [];
+  };
+
   useEffect(() => {
     const fetchUser = async () => {
       const supabase = createClient();
@@ -402,7 +430,27 @@ export function ConverterTool({ defaultTab = "convert" }: ConverterToolProps) {
             )}
 
             {files.length > 0 && results.length === 0 && (
-              <>
+              <div className="space-y-6 pt-2">
+                <div className="space-y-3">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Quick Actions</label>
+                  <div className="flex flex-wrap gap-2">
+                    {getPresets(files[0]).map((preset, i) => (
+                      <Button 
+                        key={i} 
+                        variant="outline" 
+                        size="sm" 
+                        className="text-xs h-9 bg-background/50 border-border/50 hover:border-primary/50 hover:bg-primary/5 transition-all active:scale-95 px-4 rounded-full"
+                        onClick={() => {
+                          if ('format' in preset) setOutputFormat(preset.format as string);
+                          if ('action' in preset) (preset as any).action();
+                        }}
+                      >
+                        {preset.label}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
                 <FormatSelector
                   inputExtension={inputExt}
                   value={outputFormat}
@@ -451,7 +499,7 @@ export function ConverterTool({ defaultTab = "convert" }: ConverterToolProps) {
                     <ArrowRight className="ml-2 size-4" />
                   </Button>
                 )}
-              </>
+              </div>
             )}
           </TabsContent>
 

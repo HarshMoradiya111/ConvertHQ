@@ -7,6 +7,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
 import { getOutputFormats, type FormatInfo } from "@/lib/format-map";
 
 interface FormatSelectorProps {
@@ -17,31 +19,48 @@ interface FormatSelectorProps {
 
 export function FormatSelector({ inputExtension, value, onChange }: FormatSelectorProps) {
   const formats = getOutputFormats(inputExtension);
-
-  if (formats.length === 0) {
-    return (
-      <div className="text-sm text-muted-foreground bg-muted/50 px-4 py-3 rounded-lg">
-        No conversion options available for this file type.
-      </div>
-    );
-  }
+  const isCustom = value && !formats.find(f => f.extension === value);
 
   return (
-    <div className="space-y-2">
-      <label className="text-sm font-medium text-foreground">Convert to</label>
-      <Select value={value} onValueChange={(val) => val && onChange(val)}>
-        <SelectTrigger className="w-full h-12 text-base">
-          <SelectValue placeholder="Select output format" />
-        </SelectTrigger>
-        <SelectContent>
-          {formats.map((format: FormatInfo) => (
-            <SelectItem key={format.extension} value={format.extension}>
-              <span className="font-semibold">{format.label}</span>
-              <span className="ml-2 text-muted-foreground text-xs">.{format.extension}</span>
+    <div className="space-y-4">
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-foreground">Convert to</label>
+        <Select value={isCustom ? "custom" : value} onValueChange={(val: string | null) => {
+          if (val === "custom") {
+            onChange("");
+          } else if (val) {
+            onChange(val);
+          }
+        }}>
+          <SelectTrigger className="w-full h-12 text-base">
+            <SelectValue placeholder="Select output format" />
+          </SelectTrigger>
+          <SelectContent>
+            {formats.map((format: FormatInfo) => (
+              <SelectItem key={format.extension} value={format.extension}>
+                <span className="font-semibold">{format.label}</span>
+                <span className="ml-2 text-muted-foreground text-xs">.{format.extension}</span>
+              </SelectItem>
+            ))}
+            <SelectItem value="custom">
+              <span className="font-semibold">Custom Format</span>
+              <span className="ml-2 text-muted-foreground text-xs">Type manually</span>
             </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {(isCustom || value === "") && (
+        <div className="space-y-2 animate-in slide-in-from-top-1 duration-200">
+          <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Target Extension</label>
+          <Input 
+            placeholder="e.g., txt, docx, webp"
+            value={value === "custom" ? "" : value}
+            onChange={(e) => onChange(e.target.value.toLowerCase().replace(".", ""))}
+            className="h-10"
+          />
+        </div>
+      )}
     </div>
   );
 }
