@@ -355,25 +355,27 @@ export function ConverterTool({ defaultTab = "convert" }: ConverterToolProps) {
   };
 
   return (
-    <Card className="w-full max-w-2xl mx-auto shadow-xl border-border/50">
-      <CardHeader className="text-center pb-2">
-        <CardTitle className="text-2xl font-bold flex items-center justify-center gap-2">
-          <Zap className="size-6 text-primary" />
+    <Card className="w-full max-w-2xl mx-auto shadow-2xl border-none bg-white dark:bg-slate-900 rounded-3xl overflow-hidden">
+      <CardHeader className="text-center pb-4 pt-10 px-6">
+        <CardTitle className="text-3xl md:text-4xl font-black flex items-center justify-center gap-3 tracking-tighter">
+          <div className="bg-primary size-10 md:size-12 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-primary/20">
+            <Zap className="size-6 md:size-7 fill-current" />
+          </div>
           File Converter
         </CardTitle>
-        <CardDescription>
+        <CardDescription className="text-base md:text-lg text-slate-500 dark:text-slate-400 mt-2">
           Convert and compress images instantly. More formats coming soon.
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-8 p-6 md:p-10">
         <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); resetAll(); }}>
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="convert">Convert</TabsTrigger>
-            <TabsTrigger value="compress">Compress</TabsTrigger>
-            <TabsTrigger value="pdf">PDF Tools</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3 h-12 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+            <TabsTrigger value="convert" className="rounded-lg font-bold text-xs sm:text-sm">Convert</TabsTrigger>
+            <TabsTrigger value="compress" className="rounded-lg font-bold text-xs sm:text-sm">Compress</TabsTrigger>
+            <TabsTrigger value="pdf" className="rounded-lg font-bold text-xs sm:text-sm">PDF Tools</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="convert" className="space-y-6 pt-4">
+          <TabsContent value="convert" className="space-y-8 pt-6 outline-none">
             <FileDropzone
               onFileSelect={(f) => { 
                 setFiles(prev => [...prev, f]); 
@@ -381,27 +383,27 @@ export function ConverterTool({ defaultTab = "convert" }: ConverterToolProps) {
                 setStatus("idle"); 
                 setResults([]); 
               }}
-              currentFile={files[0] || null} // Placeholder for UI, we will enhance this
+              currentFile={files[0] || null}
               onClear={resetAll}
               multiple={true}
             />
 
             {files.length > 0 && results.length === 0 && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-sm font-semibold text-slate-500">Selected Files ({files.length})</h4>
-                  <Button variant="ghost" size="sm" onClick={() => setFiles([])} className="text-xs">
+              <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
+                <div className="flex items-center justify-between px-1">
+                  <h4 className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Selected Files ({files.length})</h4>
+                  <Button variant="ghost" size="sm" onClick={() => setFiles([])} className="h-8 text-xs font-bold text-destructive hover:bg-destructive/10 rounded-lg">
                     Clear All
                   </Button>
                 </div>
-                <div className="max-h-40 overflow-y-auto space-y-2 pr-2">
+                <div className="max-h-56 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
                   {files.map((f, i) => (
-                    <div key={i} className="flex items-center justify-between p-2 bg-slate-50 dark:bg-slate-900 rounded-lg text-sm">
-                      <span className="truncate flex-1 mr-4">{f.name}</span>
+                    <div key={i} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl text-sm border border-slate-100 dark:border-slate-800/50">
+                      <span className="truncate flex-1 mr-4 font-medium">{f.name}</span>
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        className="size-6 text-slate-400"
+                        className="size-8 text-slate-400 hover:text-destructive hover:bg-destructive/10 rounded-lg"
                         onClick={() => setFiles(files.filter((_, idx) => idx !== i))}
                       >
                         <X className="size-4" />
@@ -410,8 +412,8 @@ export function ConverterTool({ defaultTab = "convert" }: ConverterToolProps) {
                   ))}
                   <Button 
                     variant="outline" 
-                    size="sm" 
-                    className="w-full border-dashed"
+                    size="lg" 
+                    className="w-full border-dashed border-2 border-slate-200 dark:border-slate-800 rounded-xl h-14 font-bold text-slate-500 hover:border-primary/50 hover:text-primary transition-all"
                     onClick={() => {
                       const input = document.createElement("input");
                       input.type = "file";
@@ -423,23 +425,23 @@ export function ConverterTool({ defaultTab = "convert" }: ConverterToolProps) {
                       input.click();
                     }}
                   >
-                    <Plus className="mr-2 size-4" /> Add More
+                    <Plus className="mr-2 size-5" /> Add More Files
                   </Button>
                 </div>
               </div>
             )}
 
             {files.length > 0 && results.length === 0 && (
-              <div className="space-y-6 pt-2">
-                <div className="space-y-3">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Quick Actions</label>
+              <div className="space-y-8 pt-2">
+                <div className="space-y-4">
+                  <label className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] px-1">Quick Actions</label>
                   <div className="flex flex-wrap gap-2">
                     {getPresets(files[0]).map((preset, i) => (
                       <Button 
                         key={i} 
                         variant="outline" 
                         size="sm" 
-                        className="text-xs h-9 bg-background/50 border-border/50 hover:border-primary/50 hover:bg-primary/5 transition-all active:scale-95 px-4 rounded-full"
+                        className="text-xs h-10 bg-background border-slate-200 dark:border-slate-800 hover:border-primary hover:bg-primary/5 transition-all active:scale-95 px-5 rounded-full font-bold"
                         onClick={() => {
                           if ('format' in preset) setOutputFormat(preset.format as string);
                           if ('action' in preset) (preset as any).action();
@@ -464,23 +466,23 @@ export function ConverterTool({ defaultTab = "convert" }: ConverterToolProps) {
                 {files.length > 0 && getCategoryFromExtension(getExtension(files[0].name)) === "image" && (
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Width (px)</label>
+                      <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Width (px)</label>
                       <Input 
                         type="number" 
                         placeholder="Width" 
                         value={resizeWidth || ""} 
                         onChange={(e) => setResizeWidth(parseInt(e.target.value))} 
-                        className="h-10"
+                        className="h-12 text-base rounded-xl border-slate-200 dark:border-slate-800"
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Height (px)</label>
+                      <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Height (px)</label>
                       <Input 
                         type="number" 
                         placeholder="Height" 
                         value={resizeHeight || ""} 
                         onChange={(e) => setResizeHeight(parseInt(e.target.value))} 
-                        className="h-10"
+                        className="h-12 text-base rounded-xl border-slate-200 dark:border-slate-800"
                       />
                     </div>
                   </div>
@@ -492,18 +494,17 @@ export function ConverterTool({ defaultTab = "convert" }: ConverterToolProps) {
                   <Button
                     onClick={handleConvert}
                     size="lg"
-                    className="w-full font-semibold h-12"
-                    disabled={!outputFormat}
+                    className="w-full font-black text-lg h-16 rounded-2xl shadow-xl shadow-primary/20 hover:scale-[1.01] active:scale-[0.99] transition-all"
                   >
                     Convert to {outputFormat.toUpperCase()}
-                    <ArrowRight className="ml-2 size-4" />
+                    <ArrowRight className="ml-2 size-6" />
                   </Button>
                 )}
               </div>
             )}
           </TabsContent>
 
-          <TabsContent value="compress" className="space-y-6 pt-4">
+          <TabsContent value="compress" className="space-y-8 pt-6 outline-none">
             <FileDropzone
               onFileSelect={(f) => { setFiles(prev => [...prev, f]); setStatus("idle"); setResults([]); }}
               currentFile={files[0] || null}
@@ -511,21 +512,21 @@ export function ConverterTool({ defaultTab = "convert" }: ConverterToolProps) {
             />
 
             {files.length > 0 && results.length === 0 && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-sm font-semibold text-slate-500">Selected Files ({files.length})</h4>
-                  <Button variant="ghost" size="sm" onClick={() => setFiles([])} className="text-xs">
+              <div className="space-y-6">
+                <div className="flex items-center justify-between px-1">
+                  <h4 className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Selected Files ({files.length})</h4>
+                  <Button variant="ghost" size="sm" onClick={() => setFiles([])} className="h-8 text-xs font-bold text-destructive rounded-lg">
                     Clear All
                   </Button>
                 </div>
-                <div className="max-h-40 overflow-y-auto space-y-2 pr-2">
+                <div className="max-h-56 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
                   {files.map((f, i) => (
-                    <div key={i} className="flex items-center justify-between p-2 bg-slate-50 dark:bg-slate-900 rounded-lg text-sm">
-                      <span className="truncate flex-1 mr-4">{f.name}</span>
+                    <div key={i} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl text-sm border border-slate-100 dark:border-slate-800/50">
+                      <span className="truncate flex-1 mr-4 font-medium">{f.name}</span>
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        className="size-6 text-slate-400"
+                        className="size-8 text-slate-400 rounded-lg"
                         onClick={() => setFiles(files.filter((_, idx) => idx !== i))}
                       >
                         <X className="size-4" />
@@ -537,7 +538,7 @@ export function ConverterTool({ defaultTab = "convert" }: ConverterToolProps) {
             )}
 
             {files.length > 0 && results.length === 0 && (
-              <>
+              <div className="space-y-8">
                 <CompressionSlider value={quality} onChange={setQuality} />
 
                 <ConversionProgress status={status} errorMessage={errorMessage} />
@@ -546,17 +547,17 @@ export function ConverterTool({ defaultTab = "convert" }: ConverterToolProps) {
                   <Button
                     onClick={handleCompress}
                     size="lg"
-                    className="w-full font-semibold h-12"
+                    className="w-full font-black text-lg h-16 rounded-2xl shadow-xl shadow-primary/20 hover:scale-[1.01] active:scale-[0.99] transition-all"
                   >
                     Compress at {quality}% Quality
-                    <RefreshCw className="ml-2 size-4" />
+                    <RefreshCw className="ml-2 size-6" />
                   </Button>
                 )}
-              </>
+              </div>
             )}
           </TabsContent>
 
-          <TabsContent value="pdf" className="space-y-6 pt-4">
+          <TabsContent value="pdf" className="space-y-8 pt-6 outline-none">
             <FileDropzone
               onFileSelect={(f) => { setFiles(prev => [...prev, f]); setStatus("idle"); setResults([]); }}
               accept={{ "application/pdf": [".pdf"] }}
@@ -566,26 +567,26 @@ export function ConverterTool({ defaultTab = "convert" }: ConverterToolProps) {
             />
 
             {files.length > 0 && results.length === 0 && (
-              <div className="space-y-4">
-                <div className="grid grid-cols-3 gap-2">
+              <div className="space-y-8">
+                <div className="grid grid-cols-3 gap-3">
                   <Button 
                     variant={pdfOp === "merge" ? "default" : "outline"}
                     onClick={() => setPdfOp("merge")}
-                    className="text-xs sm:text-sm"
+                    className="h-12 font-bold rounded-xl text-xs sm:text-sm"
                   >
                     Merge
                   </Button>
                   <Button 
                     variant={pdfOp === "split" ? "default" : "outline"}
                     onClick={() => setPdfOp("split")}
-                    className="text-xs sm:text-sm"
+                    className="h-12 font-bold rounded-xl text-xs sm:text-sm"
                   >
                     Split
                   </Button>
                   <Button 
                     variant={pdfOp === "compress" ? "default" : "outline"}
                     onClick={() => setPdfOp("compress")}
-                    className="text-xs sm:text-sm"
+                    className="h-12 font-bold rounded-xl text-xs sm:text-sm"
                   >
                     Compress
                   </Button>
@@ -597,10 +598,10 @@ export function ConverterTool({ defaultTab = "convert" }: ConverterToolProps) {
                   <Button
                     onClick={() => handlePDF(pdfOp)}
                     size="lg"
-                    className="w-full font-semibold h-12"
+                    className="w-full font-black text-lg h-16 rounded-2xl shadow-xl shadow-primary/20 hover:scale-[1.01] active:scale-[0.99] transition-all"
                   >
                     Run {pdfOp.charAt(0).toUpperCase() + pdfOp.slice(1)}
-                    <ArrowRight className="ml-2 size-4" />
+                    <ArrowRight className="ml-2 size-6" />
                   </Button>
                 )}
               </div>
@@ -609,28 +610,28 @@ export function ConverterTool({ defaultTab = "convert" }: ConverterToolProps) {
         </Tabs>
 
         {results.length > 0 && (
-          <div className="space-y-6">
-            <Separator />
-            <div className="flex items-center justify-between">
-              <h3 className="font-bold text-slate-900 dark:text-white">Conversion Results ({results.length})</h3>
+          <div className="space-y-8 animate-in fade-in zoom-in-95 duration-500">
+            <Separator className="bg-slate-100 dark:bg-slate-800" />
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <h3 className="font-black text-xl text-slate-900 dark:text-white tracking-tight">Results ({results.length})</h3>
               <Button 
                 variant={userTier === "pro" ? "default" : "secondary"}
-                size="sm"
-                className="font-bold"
+                size="lg"
+                className="font-bold rounded-xl w-full sm:w-auto h-12 shadow-lg"
                 onClick={userTier === "pro" ? handleDownloadAll : () => window.location.href = "/pricing"}
                 disabled={isZipping}
               >
                 {isZipping ? (
-                  <Loader2 className="mr-2 size-4 animate-spin" />
+                  <Loader2 className="mr-2 size-5 animate-spin" />
                 ) : (
-                  <FileArchive className="mr-2 size-4" />
+                  <FileArchive className="mr-2 size-5" />
                 )}
                 Download All (.zip)
-                {userTier !== "pro" && <Zap className="ml-2 size-3 text-amber-500 fill-amber-500" />}
+                {userTier !== "pro" && <Zap className="ml-2 size-4 text-amber-500 fill-amber-500" />}
               </Button>
             </div>
             
-            <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
+            <div className="grid gap-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
               {results.map((res, i) => (
                 <DownloadCard
                   key={i}
@@ -644,13 +645,14 @@ export function ConverterTool({ defaultTab = "convert" }: ConverterToolProps) {
               ))}
             </div>
             
-            <Button variant="ghost" onClick={resetAll} className="w-full">
+            <Button variant="outline" onClick={resetAll} className="w-full h-14 text-lg font-bold rounded-2xl border-2 border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
               Convert More Files
             </Button>
           </div>
         )}
-        <AdBanner userTier={userTier} className="mt-8 mb-0" />
+        <AdBanner userTier={userTier} className="mt-12 rounded-2xl overflow-hidden shadow-sm" />
       </CardContent>
     </Card>
+
   );
 }

@@ -115,9 +115,9 @@ export default function LoginPage() {
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4 pt-4">
+        <form onSubmit={handleSubmit} className="space-y-5 pt-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700 dark:text-slate-300" htmlFor="email">
+            <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1" htmlFor="email">
               Email
             </label>
             <input
@@ -126,18 +126,18 @@ export default function LoginPage() {
               type="email"
               placeholder="name@example.com"
               required
-              className="w-full h-11 px-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+              className="w-full h-12 px-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-base focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-slate-400"
             />
           </div>
           
           <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <label className="text-sm font-medium text-slate-700 dark:text-slate-300" htmlFor="password">
+            <div className="flex items-center justify-between ml-1">
+              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300" htmlFor="password">
                 Password
               </label>
               <a 
                 href="/forgot-password" 
-                className="text-xs text-primary hover:underline transition-all"
+                className="text-xs font-medium text-primary hover:underline transition-all"
               >
                 Forgot password?
               </a>
@@ -147,19 +147,20 @@ export default function LoginPage() {
               name="password"
               type="password"
               required
-              className="w-full h-11 px-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+              className="w-full h-12 px-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-base focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
             />
           </div>
 
           <Button 
             type="submit" 
-            className="w-full h-11 text-base font-semibold"
+            className="w-full h-12 text-lg font-bold rounded-xl shadow-lg shadow-primary/20 mt-2"
             disabled={isLoading}
           >
-            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isLoading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
             {isLogin ? "Sign In" : "Sign Up"}
           </Button>
         </form>
+
 
         {/* Toggle */}
         <div className="text-center pt-2">

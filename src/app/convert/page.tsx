@@ -10,26 +10,7 @@ export const metadata: Metadata = {
 export default function ConvertPage() {
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
-      {/* Header */}
-      <header className="px-4 lg:px-6 h-16 flex items-center border-b border-border/40 backdrop-blur-sm sticky top-0 z-50 bg-background/80">
-        <a href="/" className="flex items-center gap-2 font-bold text-xl tracking-tight">
-          <div className="bg-primary size-8 rounded-lg flex items-center justify-center text-white">
-            <Zap className="size-5 fill-current" />
-          </div>
-          <span>ConvertHQ</span>
-        </a>
-        <nav className="ml-auto flex gap-4 sm:gap-6">
-          <a className="text-sm font-medium text-primary" href="/convert">
-            Convert
-          </a>
-          <a className="text-sm font-medium hover:text-primary transition-colors" href="/#features">
-            Features
-          </a>
-          <a className="text-sm font-medium hover:text-primary transition-colors" href="/#pricing">
-            Pricing
-          </a>
-        </nav>
-      </header>
+      {/* Main */}
 
       {/* Main */}
       <main className="flex-1 py-12 px-4">
@@ -65,14 +46,6 @@ export default function ConvertPage() {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="flex flex-col gap-2 sm:flex-row py-8 w-full shrink-0 items-center px-4 md:px-6 border-t border-border/40 text-muted-foreground">
-        <p className="text-sm">© 2026 ConvertHQ Inc. All rights reserved.</p>
-        <nav className="sm:ml-auto flex gap-4 sm:gap-6">
-          <a className="text-xs hover:text-primary transition-colors" href="#">Terms</a>
-          <a className="text-xs hover:text-primary transition-colors" href="#">Privacy</a>
-        </nav>
-      </footer>
     </div>
   );
 }

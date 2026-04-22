@@ -2,8 +2,10 @@
 
 import { useCallback, useState } from "react";
 import { useDropzone, type FileRejection } from "react-dropzone";
-import { Upload, FileIcon, X, AlertCircle } from "lucide-react";
+import { Upload, FileIcon, X, AlertCircle, Plus, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 import { formatBytes } from "@/lib/shared-utils";
 import { FILE_LIMITS } from "@/lib/format-map";
 
@@ -56,26 +58,26 @@ export function FileDropzone({
 
   if (currentFile) {
     return (
-      <div className="border-2 border-primary/30 bg-primary/5 rounded-2xl p-6 flex items-center gap-4">
-        <div className="p-3 rounded-xl bg-primary/10 text-primary shrink-0">
-          <FileIcon className="size-8" />
+      <div className="border-2 border-primary/20 bg-primary/5 rounded-3xl p-5 md:p-6 flex items-center gap-4 transition-all duration-500 animate-in fade-in zoom-in-95">
+        <div className="p-4 rounded-2xl bg-primary/10 text-primary shrink-0 shadow-sm">
+          <FileIcon className="size-8 md:size-10" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-sm truncate">
+          <p className="font-bold text-base md:text-lg truncate text-slate-900 dark:text-white">
             {multiple ? "Ready to process" : currentFile.name}
           </p>
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5 font-medium">
             {multiple ? "Click Convert to start batch" : `${formatBytes(currentFile.size)} • ${currentFile.type || "unknown type"}`}
           </p>
         </div>
         {onClear && (
           <Button
             variant="ghost"
-            size="sm"
+            size="icon"
             onClick={onClear}
-            className="shrink-0 text-muted-foreground hover:text-destructive"
+            className="shrink-0 size-10 text-slate-400 hover:text-destructive hover:bg-destructive/10 rounded-xl transition-colors"
           >
-            <X className="size-4" />
+            <X className="size-5" />
           </Button>
         )}
       </div>
@@ -83,42 +85,58 @@ export function FileDropzone({
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-4">
       <div
         {...getRootProps()}
-        className={`
-          border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer
-          transition-all duration-200 ease-out
-          ${isDragActive
-            ? "border-primary bg-primary/5 scale-[1.01]"
-            : "border-border hover:border-primary/50 hover:bg-muted/30"
-          }
-        `}
+        className={cn(
+          "relative group cursor-pointer rounded-3xl border-2 border-dashed transition-all duration-500",
+          "flex flex-col items-center justify-center text-center",
+          "p-8 md:p-16 lg:p-20",
+          isDragActive 
+            ? "border-primary bg-primary/5 scale-[0.99] shadow-inner" 
+            : "border-slate-200 dark:border-slate-800 hover:border-primary/50 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:shadow-xl"
+        )}
       >
         <input {...getInputProps()} />
-        <div className="flex flex-col items-center gap-4">
-          <div className={`p-4 rounded-2xl transition-colors ${isDragActive ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>
-            <Upload className="size-8" />
+        
+        <div className="relative">
+          <div className={cn(
+            "size-16 md:size-24 rounded-3xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:bg-primary group-hover:text-white shadow-sm",
+            isDragActive && "bg-primary text-white scale-110"
+          )}>
+            <Upload className={cn("size-8 md:size-12", isDragActive && "animate-pulse")} />
           </div>
-          <div>
-            <p className="font-semibold text-lg">
-              {isDragActive ? "Drop your file here" : "Drag & drop your file"}
-            </p>
-            <p className="text-sm text-muted-foreground mt-1">
-              or <span className="text-primary font-medium">browse</span> to choose a file
-            </p>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            Max file size: {formatBytes(maxSize)}
+          {!isDragActive && (
+            <div className="absolute -bottom-2 -right-2 size-8 md:size-10 rounded-2xl bg-primary text-white flex items-center justify-center shadow-lg animate-bounce">
+              <Plus className="size-5 md:size-6" />
+            </div>
+          )}
+        </div>
+
+        <div className="mt-8 space-y-3">
+          <h3 className="text-xl md:text-2xl font-black tracking-tight text-slate-900 dark:text-white">
+            {isDragActive ? "Drop files now" : "Drag & drop files"}
+          </h3>
+          <p className="text-slate-500 dark:text-slate-400 font-medium text-sm md:text-base max-w-xs mx-auto leading-relaxed">
+            or <span className="text-primary font-bold hover:underline">browse files</span> from your device
+          </p>
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest pt-2">
+            Max: {formatBytes(maxSize)}
           </p>
         </div>
+
+        {isDragActive && (
+          <div className="absolute inset-4 rounded-[2rem] border-2 border-primary/20 pointer-events-none animate-pulse" />
+        )}
       </div>
+      
       {error && (
-        <div className="flex items-center gap-2 text-sm text-destructive bg-destructive/10 px-4 py-2 rounded-lg">
-          <AlertCircle className="size-4 shrink-0" />
+        <div className="flex items-center gap-3 text-sm font-bold text-destructive bg-destructive/10 px-5 py-3 rounded-2xl animate-in shake duration-300">
+          <AlertCircle className="size-5 shrink-0" />
           <span>{error}</span>
         </div>
       )}
     </div>
   );
 }
+
