@@ -47,6 +47,7 @@ export const FORMAT_MAP: Record<string, FormatInfo> = {
   pptx: { extension: "pptx", mimeType: "application/vnd.openxmlformats-officedocument.presentationml.presentation", category: "document", label: "PPTX" },
   txt: { extension: "txt", mimeType: "text/plain", category: "document", label: "TXT" },
   csv: { extension: "csv", mimeType: "text/csv", category: "document", label: "CSV" },
+  html: { extension: "html", mimeType: "text/html", category: "document", label: "HTML" },
 };
 
 /**
@@ -62,6 +63,10 @@ export const CONVERSION_TARGETS: Record<FileCategory, string[]> = {
 
 const DOCUMENT_CONVERSION_TARGETS: Record<string, string[]> = {
   pdf: ["docx"],
+  docx: ["pdf"],
+  pptx: ["pdf"],
+  xlsx: ["pdf"],
+  html: ["pdf"],
 };
 
 /**
@@ -93,6 +98,13 @@ export function getOutputFormats(inputExtension: string): FormatInfo[] {
 
   const normalizedInput = inputExtension.toLowerCase().replace(".", "");
 
+  if (category === "image") {
+    return [...CONVERSION_TARGETS.image, "pdf"]
+      .filter((ext) => ext !== normalizedInput)
+      .map((ext) => FORMAT_MAP[ext])
+      .filter(Boolean);
+  }
+
   if (category === "document") {
     return (DOCUMENT_CONVERSION_TARGETS[normalizedInput] || [])
       .map((ext) => FORMAT_MAP[ext])
@@ -113,10 +125,15 @@ export function isConversionSupported(inputExt: string, outputExt: string): bool
   const outputCategory = getCategoryFromExtension(outputExt);
 
   if (!inputCategory || !outputCategory) return false;
-  if (inputCategory !== outputCategory) return false;
 
   const normalizedInput = inputExt.toLowerCase().replace(".", "");
   const normalizedOutput = outputExt.toLowerCase().replace(".", "");
+
+  if (inputCategory === "image" && normalizedOutput === "pdf") {
+    return true;
+  }
+
+  if (inputCategory !== outputCategory) return false;
 
   if (inputCategory === "document") {
     return (DOCUMENT_CONVERSION_TARGETS[normalizedInput] || []).includes(normalizedOutput);

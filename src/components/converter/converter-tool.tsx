@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
-import { ArrowRight, Zap, RefreshCw, Download, FileArchive, Plus, X, Video, Music, Loader2 } from "lucide-react";
+import { ArrowRight, Zap, RefreshCw, FileArchive, Plus, X, Loader2 } from "lucide-react";
 import { getExtension } from "@/lib/shared-utils";
 import JSZip from "jszip";
 import { createClient } from "@/lib/supabase/client";
@@ -19,7 +19,7 @@ import { useEffect } from "react";
 import { getCategoryFromExtension, isCategoryEnabled } from "@/lib/format-map";
 import { convertVideo } from "@/lib/video-utils";
 import { AdBanner } from "@/components/ads/ad-banner";
-import { mergePDFs, splitPDF, compressPDF } from "@/lib/pdf-utils";
+import { mergePDFs, splitPDF, compressPDF, removePDFPages, extractPDFPages, pdfToJpg, rotatePDF, addPageNumbersPDF, watermarkPDF, cropPDF, repairPDF } from "@/lib/pdf-utils";
 import { resizeImage } from "@/lib/image-utils";
 import { logConversion } from "@/lib/conversion-history";
 
@@ -35,6 +35,10 @@ interface ConverterToolProps {
   defaultTab?: string;
 }
 
+type PdfPreset =
+  | { label: string; format: string }
+  | { label: string; action: () => void };
+
 export function ConverterTool({ defaultTab = "convert" }: ConverterToolProps) {
   const [activeTab, setActiveTab] = useState(defaultTab);
   const [files, setFiles] = useState<File[]>([]);
@@ -47,10 +51,14 @@ export function ConverterTool({ defaultTab = "convert" }: ConverterToolProps) {
   const [userId, setUserId] = useState<string | null>(null);
   const [resizeWidth, setResizeWidth] = useState<number>(0);
   const [resizeHeight, setResizeHeight] = useState<number>(0);
-  const [pdfOp, setPdfOp] = useState<"merge" | "split" | "compress">("merge");
+  const [pdfOp, setPdfOp] = useState<"merge" | "split" | "compress" | "remove" | "extract" | "jpg" | "rotate" | "numbers" | "watermark" | "crop" | "repair" | "protect" | "unlock">("merge");
+  const [pageRanges, setPageRanges] = useState("1");
+  const [watermarkText, setWatermarkText] = useState("ConvertHQ");
+  const [cropPadding, setCropPadding] = useState(20);
+  const [securityPassword, setSecurityPassword] = useState("");
   const [isZipping, setIsZipping] = useState(false);
 
-  const getPresets = (file: File) => {
+  const getPresets = (file: File): PdfPreset[] => {
     const ext = getExtension(file.name);
     const cat = getCategoryFromExtension(ext);
     
@@ -108,6 +116,10 @@ export function ConverterTool({ defaultTab = "convert" }: ConverterToolProps) {
     setResizeWidth(0);
     setResizeHeight(0);
     setPdfOp("merge");
+    setPageRanges("1");
+    setWatermarkText("ConvertHQ");
+    setCropPadding(20);
+    setSecurityPassword("");
   }, []);
 
   const handleConvert = async () => {
@@ -157,7 +169,7 @@ export function ConverterTool({ defaultTab = "convert" }: ConverterToolProps) {
           }
         } else if (category === "video" || category === "audio") {
           setStatus("processing");
-          const blob = await convertVideo(file, outputFormat, (p) => {
+          const blob = await convertVideo(file, outputFormat, () => {
             // We could show progress here if we wanted
           });
           
@@ -220,30 +232,7 @@ export function ConverterTool({ defaultTab = "convert" }: ConverterToolProps) {
     }
   };
 
-  const handleResize = async (width: number, height: number) => {
-    if (files.length === 0) return;
-    setStatus("processing");
-    try {
-      const newResults: ConversionResult[] = [];
-      for (const file of files) {
-        const blob = await resizeImage(file, width, height, quality / 100);
-        const url = URL.createObjectURL(blob);
-        newResults.push({
-          downloadUrl: url,
-          format: getExtension(file.name),
-          originalSizeFormatted: (file.size / (1024 * 1024)).toFixed(2) + " MB",
-          convertedSizeFormatted: (blob.size / (1024 * 1024)).toFixed(2) + " MB",
-        });
-      }
-      setResults(newResults);
-      setStatus("done");
-    } catch (err) {
-      setStatus("error");
-      setErrorMessage(err instanceof Error ? err.message : "Resize failed");
-    }
-  };
-
-  const handlePDF = async (op: "merge" | "split" | "compress") => {
+  const handlePDF = async (op: "merge" | "split" | "compress" | "remove" | "extract" | "jpg" | "rotate" | "numbers" | "watermark" | "crop" | "repair" | "protect" | "unlock") => {
     if (files.length === 0) return;
     setStatus("processing");
     try {
@@ -259,13 +248,119 @@ export function ConverterTool({ defaultTab = "convert" }: ConverterToolProps) {
       } else if (op === "split") {
         for (const file of files) {
           const blobs = await splitPDF(file);
-          blobs.forEach((blob, idx) => {
+          blobs.forEach((blob) => {
             newResults.push({
               downloadUrl: URL.createObjectURL(blob),
               format: "pdf",
               originalSizeFormatted: "N/A",
               convertedSizeFormatted: (blob.size / (1024 * 1024)).toFixed(2) + " MB",
             });
+          });
+        }
+      } else if (op === "remove") {
+        for (const file of files) {
+          const blob = await removePDFPages(file, pageRanges);
+          newResults.push({
+            downloadUrl: URL.createObjectURL(blob),
+            format: "pdf",
+            originalSizeFormatted: (file.size / (1024 * 1024)).toFixed(2) + " MB",
+            convertedSizeFormatted: (blob.size / (1024 * 1024)).toFixed(2) + " MB",
+          });
+        }
+      } else if (op === "extract") {
+        for (const file of files) {
+          const blob = await extractPDFPages(file, pageRanges);
+          newResults.push({
+            downloadUrl: URL.createObjectURL(blob),
+            format: "pdf",
+            originalSizeFormatted: (file.size / (1024 * 1024)).toFixed(2) + " MB",
+            convertedSizeFormatted: (blob.size / (1024 * 1024)).toFixed(2) + " MB",
+          });
+        }
+      } else if (op === "jpg") {
+        for (const file of files) {
+          const blobs = await pdfToJpg(file);
+          blobs.forEach((blob) => {
+            newResults.push({
+              downloadUrl: URL.createObjectURL(blob),
+              format: "jpg",
+              originalSizeFormatted: (file.size / (1024 * 1024)).toFixed(2) + " MB",
+              convertedSizeFormatted: (blob.size / (1024 * 1024)).toFixed(2) + " MB",
+            });
+          });
+        }
+      } else if (op === "rotate") {
+        for (const file of files) {
+          const blob = await rotatePDF(file, 90);
+          newResults.push({
+            downloadUrl: URL.createObjectURL(blob),
+            format: "pdf",
+            originalSizeFormatted: (file.size / (1024 * 1024)).toFixed(2) + " MB",
+            convertedSizeFormatted: (blob.size / (1024 * 1024)).toFixed(2) + " MB",
+          });
+        }
+      } else if (op === "numbers") {
+        for (const file of files) {
+          const blob = await addPageNumbersPDF(file);
+          newResults.push({
+            downloadUrl: URL.createObjectURL(blob),
+            format: "pdf",
+            originalSizeFormatted: (file.size / (1024 * 1024)).toFixed(2) + " MB",
+            convertedSizeFormatted: (blob.size / (1024 * 1024)).toFixed(2) + " MB",
+          });
+        }
+      } else if (op === "watermark") {
+        for (const file of files) {
+          const blob = await watermarkPDF(file, watermarkText.trim() || "ConvertHQ");
+          newResults.push({
+            downloadUrl: URL.createObjectURL(blob),
+            format: "pdf",
+            originalSizeFormatted: (file.size / (1024 * 1024)).toFixed(2) + " MB",
+            convertedSizeFormatted: (blob.size / (1024 * 1024)).toFixed(2) + " MB",
+          });
+        }
+      } else if (op === "crop") {
+        for (const file of files) {
+          const blob = await cropPDF(file, cropPadding);
+          newResults.push({
+            downloadUrl: URL.createObjectURL(blob),
+            format: "pdf",
+            originalSizeFormatted: (file.size / (1024 * 1024)).toFixed(2) + " MB",
+            convertedSizeFormatted: (blob.size / (1024 * 1024)).toFixed(2) + " MB",
+          });
+        }
+      } else if (op === "repair") {
+        for (const file of files) {
+          const blob = await repairPDF(file);
+          newResults.push({
+            downloadUrl: URL.createObjectURL(blob),
+            format: "pdf",
+            originalSizeFormatted: (file.size / (1024 * 1024)).toFixed(2) + " MB",
+            convertedSizeFormatted: (blob.size / (1024 * 1024)).toFixed(2) + " MB",
+          });
+        }
+      } else if (op === "protect" || op === "unlock") {
+        for (const file of files) {
+          const formData = new FormData();
+          formData.append("file", file);
+          formData.append("action", op);
+          formData.append("password", securityPassword);
+
+          const res = await fetch("/api/pdf-security", {
+            method: "POST",
+            body: formData,
+          });
+
+          const data = await res.json();
+          if (!res.ok) {
+            throw new Error(data.error || `${op} failed for ${file.name}`);
+          }
+
+          newResults.push({
+            downloadUrl: data.downloadUrl,
+            format: data.format,
+            originalSizeFormatted: data.originalSizeFormatted,
+            convertedSizeFormatted: data.convertedSizeFormatted,
           });
         }
       } else if (op === "compress") {
@@ -448,8 +543,8 @@ export function ConverterTool({ defaultTab = "convert" }: ConverterToolProps) {
                         size="sm" 
                         className="text-xs h-10 bg-background border-slate-200 dark:border-slate-800 hover:border-primary hover:bg-primary/5 transition-all active:scale-95 px-5 rounded-full font-bold"
                         onClick={() => {
-                          if ('format' in preset) setOutputFormat(preset.format as string);
-                          if ('action' in preset) (preset as any).action();
+                          if ("format" in preset) setOutputFormat(preset.format);
+                          if ("action" in preset) preset.action();
                         }}
                       >
                         {preset.label}
@@ -579,7 +674,21 @@ export function ConverterTool({ defaultTab = "convert" }: ConverterToolProps) {
 
             {files.length > 0 && results.length === 0 && (
               <div className="space-y-8">
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-5 lg:grid-cols-13">
+                  <Button 
+                    variant={pdfOp === "jpg" ? "default" : "outline"}
+                    onClick={() => setPdfOp("jpg")}
+                    className="h-12 font-bold rounded-xl text-xs sm:text-sm"
+                  >
+                    PDF to JPG
+                  </Button>
+                  <Button 
+                    variant={pdfOp === "rotate" ? "default" : "outline"}
+                    onClick={() => setPdfOp("rotate")}
+                    className="h-12 font-bold rounded-xl text-xs sm:text-sm"
+                  >
+                    Rotate 90°
+                  </Button>
                   <Button 
                     variant={pdfOp === "merge" ? "default" : "outline"}
                     onClick={() => setPdfOp("merge")}
@@ -588,11 +697,67 @@ export function ConverterTool({ defaultTab = "convert" }: ConverterToolProps) {
                     Merge
                   </Button>
                   <Button 
+                    variant={pdfOp === "watermark" ? "default" : "outline"}
+                    onClick={() => setPdfOp("watermark")}
+                    className="h-12 font-bold rounded-xl text-xs sm:text-sm"
+                  >
+                    Watermark
+                  </Button>
+                  <Button 
+                    variant={pdfOp === "crop" ? "default" : "outline"}
+                    onClick={() => setPdfOp("crop")}
+                    className="h-12 font-bold rounded-xl text-xs sm:text-sm"
+                  >
+                    Crop
+                  </Button>
+                  <Button 
+                    variant={pdfOp === "repair" ? "default" : "outline"}
+                    onClick={() => setPdfOp("repair")}
+                    className="h-12 font-bold rounded-xl text-xs sm:text-sm"
+                  >
+                    Repair
+                  </Button>
+                  <Button 
+                    variant={pdfOp === "protect" ? "default" : "outline"}
+                    onClick={() => setPdfOp("protect")}
+                    className="h-12 font-bold rounded-xl text-xs sm:text-sm"
+                  >
+                    Protect
+                  </Button>
+                  <Button 
+                    variant={pdfOp === "unlock" ? "default" : "outline"}
+                    onClick={() => setPdfOp("unlock")}
+                    className="h-12 font-bold rounded-xl text-xs sm:text-sm"
+                  >
+                    Unlock
+                  </Button>
+                  <Button 
+                    variant={pdfOp === "numbers" ? "default" : "outline"}
+                    onClick={() => setPdfOp("numbers")}
+                    className="h-12 font-bold rounded-xl text-xs sm:text-sm"
+                  >
+                    Page Numbers
+                  </Button>
+                  <Button 
                     variant={pdfOp === "split" ? "default" : "outline"}
                     onClick={() => setPdfOp("split")}
                     className="h-12 font-bold rounded-xl text-xs sm:text-sm"
                   >
                     Split
+                  </Button>
+                  <Button 
+                    variant={pdfOp === "remove" ? "default" : "outline"}
+                    onClick={() => setPdfOp("remove")}
+                    className="h-12 font-bold rounded-xl text-xs sm:text-sm"
+                  >
+                    Remove
+                  </Button>
+                  <Button 
+                    variant={pdfOp === "extract" ? "default" : "outline"}
+                    onClick={() => setPdfOp("extract")}
+                    className="h-12 font-bold rounded-xl text-xs sm:text-sm"
+                  >
+                    Extract
                   </Button>
                   <Button 
                     variant={pdfOp === "compress" ? "default" : "outline"}
@@ -604,6 +769,62 @@ export function ConverterTool({ defaultTab = "convert" }: ConverterToolProps) {
                 </div>
 
                 <ConversionProgress status={status} errorMessage={errorMessage} />
+
+                {(pdfOp === "remove" || pdfOp === "extract") && (
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Page Ranges</label>
+                    <Input
+                      value={pageRanges}
+                      onChange={(e) => setPageRanges(e.target.value)}
+                      placeholder="1-3,5"
+                      className="h-12 text-base rounded-xl border-slate-200 dark:border-slate-800"
+                    />
+                    <p className="text-xs text-muted-foreground ml-1">
+                      Use comma-separated pages or ranges, for example 1-3,5.
+                    </p>
+                  </div>
+                )}
+
+                {pdfOp === "watermark" && (
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Watermark Text</label>
+                    <Input
+                      value={watermarkText}
+                      onChange={(e) => setWatermarkText(e.target.value)}
+                      placeholder="ConvertHQ"
+                      className="h-12 text-base rounded-xl border-slate-200 dark:border-slate-800"
+                    />
+                  </div>
+                )}
+
+                {pdfOp === "crop" && (
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Crop Padding (pt)</label>
+                    <Input
+                      type="number"
+                      value={cropPadding}
+                      onChange={(e) => setCropPadding(parseInt(e.target.value) || 0)}
+                      min={0}
+                      className="h-12 text-base rounded-xl border-slate-200 dark:border-slate-800"
+                    />
+                    <p className="text-xs text-muted-foreground ml-1">
+                      Crops the same amount from every side of each page.
+                    </p>
+                  </div>
+                )}
+
+                {(pdfOp === "protect" || pdfOp === "unlock") && (
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Password</label>
+                    <Input
+                      type="password"
+                      value={securityPassword}
+                      onChange={(e) => setSecurityPassword(e.target.value)}
+                      placeholder={pdfOp === "protect" ? "Set a password" : "Enter the PDF password"}
+                      className="h-12 text-base rounded-xl border-slate-200 dark:border-slate-800"
+                    />
+                  </div>
+                )}
 
                 {status !== "uploading" && status !== "processing" && (
                   <Button

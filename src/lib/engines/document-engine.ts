@@ -17,12 +17,30 @@ export async function convertDocument(
   const inputExtension = options.inputExtension.toLowerCase().replace(".", "");
   const outputFormat = options.outputFormat.toLowerCase().replace(".", "");
 
-  if (inputExtension !== "pdf" || outputFormat !== "docx") {
-    throw new Error("Only PDF to DOCX conversion is currently supported for documents.");
+  const supportedPairs: Record<string, string[]> = {
+    pdf: ["docx"],
+    docx: ["pdf"],
+    pptx: ["pdf"],
+    xlsx: ["pdf"],
+    html: ["pdf"],
+  };
+
+  if (!supportedPairs[inputExtension]?.includes(outputFormat)) {
+    throw new Error("Only PDF to DOCX and DOCX to PDF conversion are currently supported for documents.");
   }
 
-  const outputPath = await getTempFilePath("docx");
-  const scriptPath = path.join(process.cwd(), "src", "lib", "scripts", "pdf_to_docx.py");
+  const outputPath = await getTempFilePath(outputFormat);
+  const scriptName =
+    inputExtension === "pdf"
+      ? "pdf_to_docx.py"
+      : inputExtension === "docx"
+        ? "docx_to_pdf.py"
+        : inputExtension === "pptx"
+          ? "pptx_to_pdf.py"
+          : inputExtension === "xlsx"
+            ? "xlsx_to_pdf.py"
+            : "html_to_pdf.py";
+  const scriptPath = path.join(process.cwd(), "src", "lib", "scripts", scriptName);
 
   await new Promise<void>((resolve, reject) => {
     const child = spawn("python", [scriptPath, options.inputPath, outputPath], {
