@@ -7,7 +7,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { getOutputFormats, type FormatInfo } from "@/lib/format-map";
 
@@ -19,13 +18,17 @@ interface FormatSelectorProps {
 
 export function FormatSelector({ inputExtension, value, onChange }: FormatSelectorProps) {
   const formats = getOutputFormats(inputExtension);
+  const hasFormats = formats.length > 0;
   const isCustom = value && !formats.find(f => f.extension === value);
 
   return (
     <div className="space-y-4">
       <div className="space-y-2">
         <label className="text-sm font-medium text-foreground">Convert to</label>
-        <Select value={isCustom ? "custom" : value} onValueChange={(val: string | null) => {
+        <Select
+          disabled={!hasFormats}
+          value={isCustom ? "custom" : value}
+          onValueChange={(val: string | null) => {
           if (val === "custom") {
             onChange("");
           } else if (val) {
@@ -48,9 +51,14 @@ export function FormatSelector({ inputExtension, value, onChange }: FormatSelect
             </SelectItem>
           </SelectContent>
         </Select>
+        {!hasFormats && inputExtension && (
+          <p className="text-sm text-muted-foreground">
+            Conversion for .{inputExtension} files is not available yet.
+          </p>
+        )}
       </div>
 
-      {(isCustom || value === "") && (
+      {hasFormats && (isCustom || value === "") && (
         <div className="space-y-2 animate-in slide-in-from-top-1 duration-200">
           <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Target Extension</label>
           <Input 

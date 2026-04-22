@@ -1,7 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
+
+declare global {
+  interface Window {
+    adsbygoogle?: unknown[];
+  }
+}
 
 interface AdBannerProps {
   userTier?: string;
@@ -16,23 +22,34 @@ export function AdBanner({
   format = "auto",
   slot = "5609953898" // Actual AdSense Slot ID
 }: AdBannerProps) {
-  const [isLoaded, setIsLoaded] = useState(false);
+  const isDevelopment = process.env.NODE_ENV !== "production";
+  const adRef = useRef<HTMLElement | null>(null);
+  const adInitializedRef = useRef(false);
 
   useEffect(() => {
-    // Only attempt to load ads if user is on free tier
-    if (userTier === "free") {
+    if (isDevelopment || userTier !== "free") return;
+    const adElement = adRef.current;
+    if (!adElement || adInitializedRef.current) return;
+    if (adElement.dataset.adsbygoogleStatus === "done") return;
+
+    const frameId = window.requestAnimationFrame(() => {
+      if (!adElement.isConnected || adElement.offsetWidth === 0) return;
+
       try {
-        // @ts-ignore
         (window.adsbygoogle = window.adsbygoogle || []).push({});
-        setIsLoaded(true);
+        adInitializedRef.current = true;
       } catch (err) {
-        console.error("AdSense error:", err);
+        if (process.env.NODE_ENV === "development") {
+          console.debug("AdSense push skipped:", err);
+        }
       }
-    }
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
   }, [userTier]);
 
   // Hide ads for Pro users
-  if (userTier === "pro") {
+  if (userTier === "pro" || isDevelopment) {
     return null;
   }
 
@@ -44,6 +61,7 @@ export function AdBanner({
       <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 rounded-xl min-h-[100px] flex items-center justify-center overflow-hidden aspect-[728/90] md:aspect-auto">
         {/* Actual AdSense Tag */}
         <ins
+          ref={adRef}
           className="adsbygoogle"
           style={{ display: "block" }}
           data-ad-client="ca-pub-6253576928151627"
@@ -51,13 +69,6 @@ export function AdBanner({
           data-ad-format={format}
           data-full-width-responsive="true"
         />
-        
-        {/* Placeholder for development visibility */}
-        {!isLoaded && (
-          <div className="text-slate-300 dark:text-slate-700 font-bold text-lg animate-pulse">
-            Ad Banner Placeholder
-          </div>
-        )}
       </div>
     </div>
   );

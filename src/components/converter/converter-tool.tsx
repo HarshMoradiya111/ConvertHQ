@@ -16,7 +16,7 @@ import { getExtension } from "@/lib/shared-utils";
 import JSZip from "jszip";
 import { createClient } from "@/lib/supabase/client";
 import { useEffect } from "react";
-import { getCategoryFromExtension } from "@/lib/format-map";
+import { getCategoryFromExtension, isCategoryEnabled } from "@/lib/format-map";
 import { convertVideo } from "@/lib/video-utils";
 import { AdBanner } from "@/components/ads/ad-banner";
 import { mergePDFs, splitPDF, compressPDF } from "@/lib/pdf-utils";
@@ -66,7 +66,6 @@ export function ConverterTool({ defaultTab = "convert" }: ConverterToolProps) {
       return [
         { label: "Compress PDF", action: () => setPdfOp("compress") },
         { label: "Split PDF", action: () => setPdfOp("split") },
-        { label: "Convert to JPG", format: "jpg" },
       ];
     }
     if (cat === "video") {
@@ -96,6 +95,8 @@ export function ConverterTool({ defaultTab = "convert" }: ConverterToolProps) {
   }, []);
 
   const inputExt = files.length > 0 ? getExtension(files[0].name) : "";
+  const inputCategory = inputExt ? getCategoryFromExtension(inputExt) : null;
+  const isInputCategoryEnabled = inputCategory ? isCategoryEnabled(inputCategory) : true;
 
   const resetAll = useCallback(() => {
     setFiles([]);
@@ -121,6 +122,10 @@ export function ConverterTool({ defaultTab = "convert" }: ConverterToolProps) {
       
       for (const file of files) {
         const category = getCategoryFromExtension(getExtension(file.name));
+
+        if (category && !isCategoryEnabled(category)) {
+          throw new Error(`${category} conversion is not yet available. Coming soon in a future update!`);
+        }
         
         if ((category === "video" || category === "audio") && userTier !== "pro") {
           throw new Error("Video & Audio conversion is a Pro feature. Please upgrade to continue.");
@@ -459,6 +464,12 @@ export function ConverterTool({ defaultTab = "convert" }: ConverterToolProps) {
                   onChange={setOutputFormat}
                 />
 
+                {!isInputCategoryEnabled && inputCategory && (
+                  <p className="text-sm text-muted-foreground">
+                    {inputCategory.charAt(0).toUpperCase() + inputCategory.slice(1)} conversion is not available yet.
+                  </p>
+                )}
+
                 {outputFormat && (
                   <CompressionSlider value={quality} onChange={setQuality} />
                 )}
@@ -490,7 +501,7 @@ export function ConverterTool({ defaultTab = "convert" }: ConverterToolProps) {
 
                 <ConversionProgress status={status} errorMessage={errorMessage} />
 
-                {outputFormat && status !== "uploading" && status !== "processing" && (
+                {outputFormat && isInputCategoryEnabled && status !== "uploading" && status !== "processing" && (
                   <Button
                     onClick={handleConvert}
                     size="lg"

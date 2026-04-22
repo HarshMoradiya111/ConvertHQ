@@ -57,25 +57,31 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const isProduction = process.env.NODE_ENV === "production";
+
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <Script
-        async
-        src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6253576928151627"
-        crossOrigin="anonymous"
-        strategy="afterInteractive"
-      />
       <body className="min-h-full flex flex-col">
+        {isProduction && (
+          <Script
+            async
+            src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6253576928151627"
+            crossOrigin="anonymous"
+            strategy="afterInteractive"
+          />
+        )}
         <JsonLd />
         <PostHogProvider>
           <LanguageProvider>
             <ThemeProvider
               attribute="class"
-              defaultTheme="system"
-              enableSystem
+              defaultTheme="light"
+              enableSystem={false}
+              enableColorScheme={false}
               disableTransitionOnChange
             >
               <Header />

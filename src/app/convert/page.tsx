@@ -40,7 +40,7 @@ export default function ConvertPage() {
               ))}
             </div>
             <p className="text-xs text-muted-foreground pt-2">
-              Video, audio, and document conversion coming soon.
+              PDF to Word is now available. More video, audio, and document formats coming soon.
             </p>
           </div>
         </div>

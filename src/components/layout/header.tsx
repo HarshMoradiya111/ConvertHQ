@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import { ThemeToggle } from "./theme-toggle";
 import { LanguageSelector } from "./language-selector";
@@ -12,7 +11,6 @@ import {
   SheetTitle, 
   SheetTrigger 
 } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
 
 const NAV_LINKS = [
   { href: "/convert", label: "Converter" },
@@ -83,11 +81,12 @@ export async function Header() {
           <div className="md:hidden flex items-center gap-2">
             <ThemeToggle />
             <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="md:hidden">
-                  <Menu className="size-6" />
-                  <span className="sr-only">Toggle menu</span>
-                </Button>
+              <SheetTrigger
+                className="group/button inline-flex size-8 shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none hover:bg-muted hover:text-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50"
+                aria-label="Toggle menu"
+              >
+                <Menu className="size-6" />
+                <span className="sr-only">Toggle menu</span>
               </SheetTrigger>
               <SheetContent side="right" className="w-[300px] sm:w-[400px]">
                 <SheetHeader className="text-left">

@@ -5,6 +5,7 @@
 
 import { getCategoryFromExtension, isCategoryEnabled } from "@/lib/format-map";
 import { convertImage, compressImage, type ImageResult } from "@/lib/engines/image-engine";
+import { convertDocument } from "@/lib/engines/document-engine";
 
 export interface ConversionRequest {
   inputPath: string;
@@ -56,7 +57,11 @@ export async function processConversion(request: ConversionRequest): Promise<Con
       throw new Error("Audio conversion coming soon in Phase 1!");
 
     case "document":
-      throw new Error("Document conversion coming soon in Phase 1!");
+      return await convertDocument({
+        inputPath: request.inputPath,
+        inputExtension: request.inputExtension,
+        outputFormat: request.outputFormat,
+      });
 
     default:
       throw new Error(`Unknown category: ${category}`);

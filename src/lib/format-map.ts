@@ -60,6 +60,10 @@ export const CONVERSION_TARGETS: Record<FileCategory, string[]> = {
   document: ["pdf", "docx", "txt", "csv"],
 };
 
+const DOCUMENT_CONVERSION_TARGETS: Record<string, string[]> = {
+  pdf: ["docx"],
+};
+
 /**
  * Max file sizes in bytes
  */
@@ -85,9 +89,18 @@ export function getCategoryFromExtension(ext: string): FileCategory | null {
 export function getOutputFormats(inputExtension: string): FormatInfo[] {
   const category = getCategoryFromExtension(inputExtension);
   if (!category) return [];
+  if (!isCategoryEnabled(category)) return [];
+
+  const normalizedInput = inputExtension.toLowerCase().replace(".", "");
+
+  if (category === "document") {
+    return (DOCUMENT_CONVERSION_TARGETS[normalizedInput] || [])
+      .map((ext) => FORMAT_MAP[ext])
+      .filter(Boolean);
+  }
 
   return CONVERSION_TARGETS[category]
-    .filter((ext) => ext !== inputExtension.toLowerCase().replace(".", ""))
+    .filter((ext) => ext !== normalizedInput)
     .map((ext) => FORMAT_MAP[ext])
     .filter(Boolean);
 }
@@ -102,14 +115,20 @@ export function isConversionSupported(inputExt: string, outputExt: string): bool
   if (!inputCategory || !outputCategory) return false;
   if (inputCategory !== outputCategory) return false;
 
+  const normalizedInput = inputExt.toLowerCase().replace(".", "");
   const normalizedOutput = outputExt.toLowerCase().replace(".", "");
+
+  if (inputCategory === "document") {
+    return (DOCUMENT_CONVERSION_TARGETS[normalizedInput] || []).includes(normalizedOutput);
+  }
+
   return CONVERSION_TARGETS[inputCategory].includes(normalizedOutput);
 }
 
 /**
  * Formats currently enabled for MVP (Phase 0.5 = image only)
  */
-export const ENABLED_CATEGORIES: FileCategory[] = ["image", "video", "audio"];
+export const ENABLED_CATEGORIES: FileCategory[] = ["image", "video", "audio", "document"];
 
 export function isCategoryEnabled(category: FileCategory): boolean {
   return ENABLED_CATEGORIES.includes(category);

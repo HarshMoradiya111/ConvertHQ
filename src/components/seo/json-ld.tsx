@@ -1,4 +1,4 @@
-import { FORMAT_MAP } from "@/lib/format-map";
+import Script from "next/script";
 
 export function JsonLd() {
   const schema = {
@@ -22,8 +22,10 @@ export function JsonLd() {
   };
 
   return (
-    <script
+    <Script
+      id="software-jsonld"
       type="application/ld+json"
+      strategy="beforeInteractive"
       dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
     />
   );

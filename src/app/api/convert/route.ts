@@ -81,6 +81,17 @@ export async function POST(req: Request) {
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Conversion failed";
     console.error("Conversion error:", message);
-    return NextResponse.json({ error: message }, { status: 500 });
+
+    const normalized = message.toLowerCase();
+    const isUnsupported =
+      normalized.includes("not yet available") ||
+      normalized.includes("coming soon") ||
+      normalized.includes("unsupported") ||
+      normalized.includes("not supported");
+
+    return NextResponse.json(
+      { error: message },
+      { status: isUnsupported ? 400 : 500 }
+    );
   }
 }
